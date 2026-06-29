@@ -31,3 +31,10 @@ Thumbs.db
 # IDEs
 .vscode/
 .idea/
+
+# Project Report
+project_report.md
+
+# Databases
+chroma_db/
+*.db
