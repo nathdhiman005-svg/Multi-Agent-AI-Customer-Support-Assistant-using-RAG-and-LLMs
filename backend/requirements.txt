@@ -11,3 +11,10 @@ passlib[bcrypt]
 python-jose[cryptography]
 python-multipart
 email-validator
+
+langchain-google-genai
+langchain-community
+
+langchain-ollama
+
+litellm
