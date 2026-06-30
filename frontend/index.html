@@ -3,337 +3,483 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NovaCart AI Support</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <title>NovaCart Electronics</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-color: #0f172a;
-            --chat-bg: rgba(30, 41, 59, 0.7);
-            --user-msg: #3b82f6;
-            --ai-msg: rgba(51, 65, 85, 0.8);
+            --surface-color: rgba(30, 41, 59, 0.7);
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --secondary: #8b5cf6;
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
             --border-color: rgba(255, 255, 255, 0.1);
+            --danger: #ef4444;
         }
         
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Inter', sans-serif;
-        }
-
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        
         body {
             background-color: var(--bg-color);
             background-image: 
                 radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.15) 0px, transparent 50%),
                 radial-gradient(at 100% 100%, rgba(139, 92, 246, 0.15) 0px, transparent 50%);
+            background-attachment: fixed;
             color: var(--text-main);
-            height: 100vh;
+            min-height: 100vh;
+        }
+
+        /* Navbar */
+        nav {
             display: flex;
-            justify-content: center;
+            justify-content: space-between;
             align-items: center;
-        }
-
-        .chat-container {
-            width: 100%;
-            max-width: 900px;
-            height: 90vh;
-            background: var(--chat-bg);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid var(--border-color);
-            border-radius: 24px;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-        }
-
-        .chat-header {
-            padding: 24px;
+            padding: 24px 5%;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--border-color);
-            display: flex;
-            align-items: center;
-            gap: 16px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
+        .logo { font-size: 1.5rem; font-weight: 700; background: linear-gradient(135deg, #3b82f6, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .nav-links { display: flex; gap: 24px; align-items: center; }
+        .nav-links a { color: var(--text-main); text-decoration: none; font-weight: 500; transition: color 0.2s; cursor: pointer; }
+        .nav-links a:hover { color: var(--primary); }
+        .btn-primary { background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border: none; padding: 10px 24px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4); }
+        .btn-outline { background: transparent; color: var(--text-main); border: 1px solid var(--border-color); padding: 10px 24px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+        .btn-outline:hover { background: rgba(255, 255, 255, 0.1); }
 
-        .avatar {
-            width: 48px;
-            height: 48px;
-            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            font-size: 20px;
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-        }
+        /* Hero Section */
+        .hero { padding: 100px 5%; text-align: center; max-width: 900px; margin: 0 auto; }
+        .hero h1 { font-size: 3.5rem; font-weight: 700; margin-bottom: 24px; line-height: 1.2; letter-spacing: -0.025em; }
+        .hero p { font-size: 1.25rem; color: var(--text-muted); margin-bottom: 40px; }
 
-        .header-info h1 {
-            font-size: 1.25rem;
-            font-weight: 600;
-            letter-spacing: -0.025em;
-        }
+        /* Grid Sections */
+        .section-title { text-align: center; font-size: 2rem; margin: 60px 0 30px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 24px; padding: 0 5% 100px; }
+        .card { background: var(--surface-color); border: 1px solid var(--border-color); border-radius: 16px; padding: 24px; backdrop-filter: blur(16px); transition: transform 0.2s; }
+        .card:hover { transform: translateY(-5px); border-color: rgba(255, 255, 255, 0.2); }
+        .card h3 { font-size: 1.25rem; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+        .card ul { list-style: none; color: var(--text-muted); }
+        .card li { margin-bottom: 8px; }
 
-        .header-info p {
-            font-size: 0.875rem;
-            color: var(--text-muted);
-            margin-top: 4px;
-        }
+        /* Auth Modal */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center; }
+        .modal { background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 16px; padding: 32px; width: 100%; max-width: 400px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .modal-header h2 { font-size: 1.5rem; }
+        .close-btn { background: transparent; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; }
+        .auth-tabs { display: flex; gap: 16px; margin-bottom: 24px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; }
+        .auth-tab { background: transparent; border: none; color: var(--text-muted); font-weight: 600; cursor: pointer; font-size: 1rem; }
+        .auth-tab.active { color: var(--primary); }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; margin-bottom: 8px; color: var(--text-muted); font-size: 0.875rem; }
+        .form-group input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); color: white; padding: 12px; border-radius: 8px; font-size: 1rem; }
+        .form-group input:focus { outline: none; border-color: var(--primary); }
+        .auth-error { color: var(--danger); font-size: 0.875rem; margin-bottom: 16px; display: none; }
 
-        .chat-messages {
-            flex: 1;
-            padding: 24px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            scroll-behavior: smooth;
-        }
-
-        /* Scrollbar Styling */
-        .chat-messages::-webkit-scrollbar {
-            width: 8px;
-        }
-        .chat-messages::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        .chat-messages::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 4px;
-        }
-
-        .message {
-            max-width: 80%;
-            padding: 16px 20px;
-            border-radius: 16px;
-            font-size: 0.95rem;
-            line-height: 1.6;
-            animation: slideIn 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-            white-space: pre-wrap;
-        }
-
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .user-message {
-            align-self: flex-end;
-            background: var(--user-msg);
-            border-bottom-right-radius: 4px;
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
-        }
-
-        .ai-message {
-            align-self: flex-start;
-            background: var(--ai-msg);
-            border: 1px solid var(--border-color);
-            border-bottom-left-radius: 4px;
-        }
-
-        .input-area {
-            padding: 24px;
-            background: rgba(15, 23, 42, 0.5);
-            border-top: 1px solid var(--border-color);
-        }
-
-        .input-container {
-            display: flex;
-            gap: 12px;
-            background: rgba(255, 255, 255, 0.05);
-            padding: 8px;
-            border-radius: 16px;
-            border: 1px solid var(--border-color);
-            transition: all 0.3s ease;
-        }
-
-        .input-container:focus-within {
-            background: rgba(255, 255, 255, 0.08);
-            border-color: rgba(255, 255, 255, 0.2);
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
-        }
-
-        textarea {
-            flex: 1;
-            background: transparent;
-            border: none;
-            color: var(--text-main);
-            font-size: 1rem;
-            padding: 12px;
-            resize: none;
-            height: 48px;
-            font-family: inherit;
-        }
-
-        textarea:focus {
-            outline: none;
-        }
+        /* Chat Widget */
+        .chat-widget-btn { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; background: linear-gradient(135deg, #3b82f6, #8b5cf6); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; box-shadow: 0 10px 25px rgba(59, 130, 246, 0.5); z-index: 900; transition: transform 0.2s; border: none; color: white; }
+        .chat-widget-btn:hover { transform: scale(1.05); }
         
-        textarea::placeholder {
-            color: var(--text-muted);
-        }
+        .chat-window { display: none; position: fixed; bottom: 100px; right: 30px; width: 380px; height: 600px; max-height: 80vh; background: var(--surface-color); backdrop-filter: blur(20px); border: 1px solid var(--border-color); border-radius: 20px; flex-direction: column; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); z-index: 900; }
+        .chat-header { padding: 16px 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: rgba(15, 23, 42, 0.8); }
+        .chat-header h3 { font-size: 1rem; font-weight: 600; }
+        .chat-messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
+        .message { max-width: 85%; padding: 12px 16px; border-radius: 16px; font-size: 0.9rem; line-height: 1.5; white-space: pre-wrap; word-wrap: break-word; word-break: break-word; animation: slideIn 0.3s ease; }
+        .user-message { align-self: flex-end; background: var(--primary); border-bottom-right-radius: 4px; }
+        .ai-message { align-self: flex-start; background: var(--bg-color); border: 1px solid var(--border-color); border-bottom-left-radius: 4px; }
+        .chat-input-area { padding: 16px; border-top: 1px solid var(--border-color); background: rgba(15, 23, 42, 0.5); display: flex; gap: 8px; }
+        .chat-input-area input { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); color: white; padding: 10px 16px; border-radius: 20px; font-size: 0.9rem; }
+        .chat-input-area input:focus { outline: none; border-color: var(--primary); }
+        .chat-input-area button { background: var(--primary); color: white; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
-        .send-btn {
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            padding: 0 24px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+        .feedback-btns { display: flex; gap: 8px; margin-top: 8px; opacity: 0; transition: opacity 0.3s ease; }
+        .message:hover .feedback-btns { opacity: 1; }
+        .feedback-btn { background: rgba(255, 255, 255, 0.1); border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; color: var(--text-muted); font-size: 0.8rem; transition: background 0.2s, color 0.2s; }
+        .feedback-btn:hover { background: rgba(255, 255, 255, 0.2); color: white; }
+        .feedback-btn.active-up { background: rgba(34, 197, 94, 0.2); color: #4ade80; }
+        .feedback-btn.active-down { background: rgba(239, 68, 68, 0.2); color: #f87171; }
 
-        .send-btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
-        }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .send-btn:active {
-            transform: translateY(1px);
-        }
-
-        .send-btn:disabled {
-            background: var(--text-muted);
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-
-        .typing-indicator {
-            display: none;
-            align-self: flex-start;
-            background: var(--ai-msg);
-            padding: 16px 20px;
-            border-radius: 16px;
-            border-bottom-left-radius: 4px;
-            border: 1px solid var(--border-color);
-            gap: 6px;
-            align-items: center;
-        }
-
-        .dot {
-            width: 8px;
-            height: 8px;
-            background: var(--text-muted);
-            border-radius: 50%;
-            animation: bounce 1.4s infinite ease-in-out both;
-        }
-
+        /* Typing indicator */
+        .typing-indicator { display: none; align-self: flex-start; background: var(--bg-color); padding: 12px 16px; border-radius: 16px; border-bottom-left-radius: 4px; border: 1px solid var(--border-color); gap: 6px; align-items: center; }
+        .dot { width: 6px; height: 6px; background: var(--text-muted); border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; }
         .dot:nth-child(1) { animation-delay: -0.32s; }
         .dot:nth-child(2) { animation-delay: -0.16s; }
-
-        @keyframes bounce {
-            0%, 80%, 100% { transform: scale(0); }
-            40% { transform: scale(1); }
-        }
+        @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
     </style>
 </head>
 <body>
 
-    <div class="chat-container">
-        <header class="chat-header">
-            <div class="avatar">AI</div>
-            <div class="header-info">
-                <h1>NovaCart Support Assistant</h1>
-                <p>Multi-Agent AI Intelligence</p>
+    <!-- Navbar -->
+    <nav>
+        <div class="logo">NovaCart</div>
+        <div class="nav-links">
+            <a href="#products">Products</a>
+            <a href="#services">Services</a>
+            <div id="auth-buttons">
+                <button class="btn-outline" onclick="openAuthModal('login')">Log In</button>
+                <button class="btn-primary" onclick="openAuthModal('signup')">Sign Up</button>
             </div>
-        </header>
+            <div id="user-menu" style="display: none; align-items: center; gap: 16px;">
+                <span id="user-email" style="color: var(--text-muted); font-size: 0.9rem;"></span>
+                <button class="btn-outline" onclick="logout()">Log Out</button>
+            </div>
+        </div>
+    </nav>
 
+    <!-- Hero -->
+    <section class="hero">
+        <h1>Smart Technology,<br>Delivered to Your Doorstep.</h1>
+        <p>Your premier destination for high-quality electronics, competitive pricing, and industry-leading AI customer support.</p>
+        <button class="btn-primary" style="font-size: 1.1rem; padding: 14px 32px;" onclick="document.getElementById('products').scrollIntoView({behavior:'smooth'})">Shop Now</button>
+    </section>
+
+    <h2 class="section-title" id="products">Our Products</h2>
+    <section class="grid">
+        <div class="card">
+            <h3>💻 Computers</h3>
+            <ul>
+                <li>Laptops & Desktop PCs</li>
+                <li>Gaming PCs</li>
+                <li>High-Res Monitors</li>
+            </ul>
+        </div>
+        <div class="card">
+            <h3>📱 Mobile Devices</h3>
+            <ul>
+                <li>Smartphones</li>
+                <li>Tablets</li>
+                <li>Smartwatches</li>
+            </ul>
+        </div>
+        <div class="card">
+            <h3>🎧 Audio</h3>
+            <ul>
+                <li>Wireless Earbuds</li>
+                <li>Noise-Canceling Headphones</li>
+                <li>Bluetooth Speakers</li>
+            </ul>
+        </div>
+        <div class="card">
+            <h3>🏠 Smart Home</h3>
+            <ul>
+                <li>Smart Bulbs & Plugs</li>
+                <li>Security Cameras</li>
+                <li>Smart Doorbells</li>
+            </ul>
+        </div>
+    </section>
+
+    <h2 class="section-title" id="services">Our Services</h2>
+    <section class="grid">
+        <div class="card">
+            <h3>🚚 Fast Delivery</h3>
+            <p style="color: var(--text-muted); font-size: 0.95rem;">Nationwide shipping direct to your doorstep with real-time order tracking.</p>
+        </div>
+        <div class="card">
+            <h3>🛡️ Secure Shopping</h3>
+            <p style="color: var(--text-muted); font-size: 0.95rem;">Encrypted online payment processing and comprehensive product warranties.</p>
+        </div>
+        <div class="card">
+            <h3>🤖 AI Support</h3>
+            <p style="color: var(--text-muted); font-size: 0.95rem;">24/7 AI-powered Customer Support available via our smart chat widget below.</p>
+        </div>
+    </section>
+
+    <!-- Auth Modal -->
+    <div class="modal-overlay" id="auth-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Welcome</h2>
+                <button class="close-btn" onclick="closeAuthModal()">&times;</button>
+            </div>
+            <div class="auth-tabs">
+                <button class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">Log In</button>
+                <button class="auth-tab" id="tab-signup" onclick="switchAuthTab('signup')">Sign Up</button>
+            </div>
+            <div class="auth-error" id="auth-error"></div>
+            <form id="auth-form" onsubmit="handleAuth(event)">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="email" required placeholder="you@example.com">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="password" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%; margin-top: 8px;" id="auth-submit-btn">Log In</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Chat Widget -->
+    <button class="chat-widget-btn" onclick="toggleChat()">💬</button>
+    
+    <div class="chat-window" id="chat-window">
+        <div class="chat-header">
+            <h3>NovaCart AI Support</h3>
+            <button class="close-btn" onclick="toggleChat()" style="font-size: 1.2rem;">&times;</button>
+        </div>
         <div class="chat-messages" id="chat-messages">
             <div class="message ai-message">
                 Hello! I am the NovaCart Multi-Agent AI system. How can I assist you today?
             </div>
-            <!-- Messages go here -->
             <div class="typing-indicator" id="typing-indicator">
-                <div class="dot"></div>
-                <div class="dot"></div>
-                <div class="dot"></div>
+                <div class="dot"></div><div class="dot"></div><div class="dot"></div>
             </div>
         </div>
-
-        <div class="input-area">
-            <div class="input-container">
-                <textarea id="user-input" placeholder="Type your issue here... (e.g. 404 error on login)" onkeydown="handleKeyDown(event)"></textarea>
-                <button class="send-btn" id="send-btn" onclick="sendMessage()">Send</button>
-            </div>
+        <div class="chat-input-area">
+            <input type="text" id="chat-input" placeholder="Type your issue..." onkeydown="handleChatKey(event)">
+            <button onclick="sendChatMessage()">➤</button>
         </div>
     </div>
 
     <script>
-        const chatMessages = document.getElementById('chat-messages');
-        const userInput = document.getElementById('user-input');
-        const sendBtn = document.getElementById('send-btn');
-        const typingIndicator = document.getElementById('typing-indicator');
-
-        function handleKeyDown(event) {
-            if (event.key === 'Enter' && !event.shiftKey) {
-                event.preventDefault();
-                sendMessage();
+        // --- Auth Logic ---
+        let currentAuthMode = 'login';
+        
+        function checkLoginState() {
+            const token = localStorage.getItem('access_token');
+            const email = localStorage.getItem('user_email');
+            
+            if (token && email) {
+                document.getElementById('auth-buttons').style.display = 'none';
+                document.getElementById('user-menu').style.display = 'flex';
+                document.getElementById('user-email').textContent = email;
+            } else {
+                document.getElementById('auth-buttons').style.display = 'flex';
+                document.getElementById('user-menu').style.display = 'none';
+                document.getElementById('chat-window').style.display = 'none';
             }
         }
 
-        function appendMessage(text, sender) {
-            const msgDiv = document.createElement('div');
-            msgDiv.className = `message ${sender}-message`;
-            msgDiv.textContent = text;
-            // Insert before typing indicator
-            chatMessages.insertBefore(msgDiv, typingIndicator);
-            scrollToBottom();
+        function openAuthModal(mode) {
+            document.getElementById('auth-modal').style.display = 'flex';
+            switchAuthTab(mode);
         }
 
-        function scrollToBottom() {
+        function closeAuthModal() {
+            document.getElementById('auth-modal').style.display = 'none';
+            document.getElementById('auth-error').style.display = 'none';
+            document.getElementById('auth-form').reset();
+        }
+
+        function switchAuthTab(mode) {
+            currentAuthMode = mode;
+            document.getElementById('tab-login').classList.toggle('active', mode === 'login');
+            document.getElementById('tab-signup').classList.toggle('active', mode === 'signup');
+            document.getElementById('auth-submit-btn').textContent = mode === 'login' ? 'Log In' : 'Sign Up';
+            document.getElementById('auth-error').style.display = 'none';
+        }
+
+        async function handleAuth(event) {
+            event.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const errorDiv = document.getElementById('auth-error');
+            const btn = document.getElementById('auth-submit-btn');
+            
+            errorDiv.style.display = 'none';
+            btn.disabled = true;
+            btn.textContent = 'Please wait...';
+
+            try {
+                let url, options;
+                
+                if (currentAuthMode === 'signup') {
+                    url = '/auth/register';
+                    options = {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, password })
+                    };
+                } else {
+                    url = '/auth/token';
+                    const formData = new URLSearchParams();
+                    formData.append('username', email);
+                    formData.append('password', password);
+                    options = {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: formData
+                    };
+                }
+
+                const res = await fetch(url, options);
+                const data = await res.json();
+
+                if (!res.ok) {
+                    throw new Error(data.detail || 'Authentication failed');
+                }
+
+                localStorage.setItem('access_token', data.access_token);
+                localStorage.setItem('user_email', email);
+                closeAuthModal();
+                checkLoginState();
+                
+                if(pendingChatOpen) {
+                    toggleChat();
+                    pendingChatOpen = false;
+                }
+
+            } catch (err) {
+                errorDiv.textContent = err.message;
+                errorDiv.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = currentAuthMode === 'login' ? 'Log In' : 'Sign Up';
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('user_email');
+            checkLoginState();
+        }
+
+        // --- Chat Logic ---
+        const chatWindow = document.getElementById('chat-window');
+        const chatMessages = document.getElementById('chat-messages');
+        const chatInput = document.getElementById('chat-input');
+        const typingIndicator = document.getElementById('typing-indicator');
+        let pendingChatOpen = false;
+
+        function toggleChat() {
+            const token = localStorage.getItem('access_token');
+            if (!token) {
+                pendingChatOpen = true;
+                openAuthModal('login');
+                return;
+            }
+            
+            if (chatWindow.style.display === 'flex') {
+                chatWindow.style.display = 'none';
+            } else {
+                chatWindow.style.display = 'flex';
+                chatInput.focus();
+            }
+        }
+
+        function handleChatKey(event) {
+            if (event.key === 'Enter') {
+                sendChatMessage();
+            }
+        }
+
+        function appendMessage(text, sender, conversationId = null) {
+            const msgContainer = document.createElement('div');
+            msgContainer.className = `message ${sender}-message`;
+            
+            const textDiv = document.createElement('div');
+            textDiv.textContent = text;
+            msgContainer.appendChild(textDiv);
+            
+            if (sender === 'ai' && conversationId) {
+                const btnContainer = document.createElement('div');
+                btnContainer.className = 'feedback-btns';
+                
+                const upBtn = document.createElement('button');
+                upBtn.className = 'feedback-btn';
+                upBtn.textContent = '👍';
+                upBtn.onclick = () => submitFeedback(conversationId, 1, upBtn, btnContainer);
+                
+                const downBtn = document.createElement('button');
+                downBtn.className = 'feedback-btn';
+                downBtn.textContent = '👎';
+                downBtn.onclick = () => submitFeedback(conversationId, -1, downBtn, btnContainer);
+                
+                btnContainer.appendChild(upBtn);
+                btnContainer.appendChild(downBtn);
+                msgContainer.appendChild(btnContainer);
+            }
+            
+            chatMessages.insertBefore(msgContainer, typingIndicator);
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
-        async function sendMessage() {
-            const query = userInput.value.trim();
+        async function submitFeedback(conversationId, score, btnElement, container) {
+            const token = localStorage.getItem('access_token');
+            if (!token) return;
+            
+            try {
+                const res = await fetch('/agent/feedback', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ conversation_id: conversationId, score: score })
+                });
+                if (res.ok) {
+                    // Update UI
+                    Array.from(container.children).forEach(b => b.className = 'feedback-btn');
+                    if (score === 1) btnElement.classList.add('active-up');
+                    else btnElement.classList.add('active-down');
+                }
+            } catch (err) {
+                console.error("Feedback failed:", err);
+            }
+        }
+
+        async function sendChatMessage() {
+            const query = chatInput.value.trim();
             if (!query) return;
 
-            // 1. Add user message to UI
-            appendMessage(query, 'user');
-            userInput.value = '';
-            
-            // 2. Show typing and disable button
-            typingIndicator.style.display = 'flex';
-            sendBtn.disabled = true;
-            scrollToBottom();
+            const token = localStorage.getItem('access_token');
+            if (!token) {
+                logout();
+                openAuthModal('login');
+                return;
+            }
 
-            // 3. Send Request
+            appendMessage(query, 'user');
+            chatInput.value = '';
+            chatInput.disabled = true;
+            
+            typingIndicator.style.display = 'flex';
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
             try {
                 const response = await fetch('/agent/chat', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
                     body: JSON.stringify({ query: query })
                 });
                 
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
+                if (response.status === 401) {
+                    logout();
+                    openAuthModal('login');
+                    throw new Error('Session expired');
                 }
                 
+                if (!response.ok) throw new Error('Network error');
+                
                 const data = await response.json();
-                
-                // Hide typing
                 typingIndicator.style.display = 'none';
-                
-                // Show AI Response
-                appendMessage(data.response, 'ai');
+                appendMessage(data.response, 'ai', data.conversation_id);
                 
             } catch (error) {
                 typingIndicator.style.display = 'none';
-                appendMessage("Sorry, I encountered a system error while processing your request.", 'ai');
-                console.error('Error:', error);
+                if(error.message !== 'Session expired') {
+                    appendMessage("Sorry, I encountered an error processing your request.", 'ai');
+                }
             } finally {
-                sendBtn.disabled = false;
-                userInput.focus();
+                chatInput.disabled = false;
+                chatInput.focus();
             }
         }
+
+        // Init
+        checkLoginState();
     </script>
 </body>
 </html>

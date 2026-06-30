@@ -46,7 +46,7 @@ class SupportTasks:
         
     def aggregator_task(self, agent, query: str):
         return Task(
-            description=f"Review the combined raw solutions provided by the specialized agents regarding this customer query: '{query}'. Rewrite everything into a single, cohesive, polished response for the customer. Ensure the tone is empathetic, professional, and clearly formatted. CRITICAL RULE: NEVER use the words 'knowledge base', 'RAG', or cite '.pdf' file names. Act as a human expert who simply knows the answers internally.",
-            expected_output="A polished, polite, and final response ready to be sent directly to the customer. It must sound entirely human with no robotic references to internal documents or PDFs.",
+            description=f"Review the combined raw solutions provided by the specialized agents regarding this customer query: '{query}'. Rewrite everything into a single, cohesive, polished response for the customer. Ensure the tone is empathetic and conversational. CRITICAL RULE 1: Never mention 'knowledge base' or cite '.pdf' files. Act as a human expert. CRITICAL RULE 2: You are writing a single instant message chat bubble. End your response immediately after your final sentence. Do not include any signatures, names, or sign-offs at the end.",
+            expected_output="A polished, polite, and final response ready to be sent directly to the customer's live chat window. Must be purely conversational text. Stop generating immediately after the final sentence.",
             agent=agent
         )

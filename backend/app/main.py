@@ -5,6 +5,8 @@ from fastapi.middleware.cors import CORSMiddleware
 import os
 
 from app.models.base import Base
+from app.models.user import User
+from app.models.analytics import ConversationLog, Feedback
 from app.database.session import engine
 from app.auth.router import router as auth_router
 from app.rag.router import router as rag_router
