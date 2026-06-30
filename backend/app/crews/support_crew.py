@@ -34,28 +34,32 @@ class SupportCrew:
             
         return found_categories
 
-    def process_query(self, query: str, categories: list[str]) -> str:
+    def process_query(self, query: str, categories: list[str], user_email: str = "") -> str:
         """Execute the query dynamically assembling the required specialized agents."""
         active_agents = []
         active_tasks = []
         
+        # Instantiate a fresh tool per request for state tracking
+        from app.tools.email_tool import EscalationEmailTool
+        email_tool_instance = EscalationEmailTool()
+        
         # 1. Dynamically add the specialized agents and their research tasks
         for category in categories:
             if category == "Technical":
-                agent = self.agents.technical_support_agent()
-                task = self.tasks.technical_task(agent, query)
+                agent = self.agents.technical_support_agent(email_tool_instance)
+                task = self.tasks.technical_task(agent, query, user_email)
             elif category == "Billing":
-                agent = self.agents.billing_support_agent()
-                task = self.tasks.billing_task(agent, query)
+                agent = self.agents.billing_support_agent(email_tool_instance)
+                task = self.tasks.billing_task(agent, query, user_email)
             elif category == "Product":
-                agent = self.agents.product_support_agent()
-                task = self.tasks.product_task(agent, query)
+                agent = self.agents.product_support_agent(email_tool_instance)
+                task = self.tasks.product_task(agent, query, user_email)
             elif category == "Complaint":
-                agent = self.agents.complaint_support_agent()
-                task = self.tasks.complaint_task(agent, query)
+                agent = self.agents.complaint_support_agent(email_tool_instance)
+                task = self.tasks.complaint_task(agent, query, user_email)
             else:
-                agent = self.agents.general_faq_agent()
-                task = self.tasks.faq_task(agent, query)
+                agent = self.agents.general_faq_agent(email_tool_instance)
+                task = self.tasks.faq_task(agent, query, user_email)
                 
             active_agents.append(agent)
             active_tasks.append(task)

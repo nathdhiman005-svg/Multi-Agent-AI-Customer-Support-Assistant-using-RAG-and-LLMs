@@ -36,7 +36,7 @@ def agent_chat(request: ChatRequest, current_user: User = Depends(get_current_us
         intents = support_crew.route_query(request.query)
         
         # Step 2: Process with specialized agent(s)
-        response_text = support_crew.process_query(request.query, intents)
+        response_text = support_crew.process_query(request.query, intents, current_user.email)
         
         # Calculate response time
         end_time = time.time()
