@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NovaCart AI - Admin Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+    <!-- Dashboard Screen -->
+    <div id="dashboard-screen" class="screen">
+        <nav class="sidebar glass-panel">
+            <div class="logo">
+                <h2>NovaCart AI</h2>
+                <span class="badge">Admin</span>
+            </div>
+            <ul class="nav-links">
+                <li class="active" data-tab="analytics-tab">Analytics</li>
+                <li data-tab="kb-tab">Knowledge Base</li>
+                <li data-tab="settings-tab">Settings</li>
+            </ul>
+            <div class="sidebar-footer">
+                <button id="logout-btn" class="btn outline">Logout</button>
+            </div>
+        </nav>
+
+        <main class="content">
+            <!-- Analytics Tab -->
+            <section id="analytics-tab" class="tab-content active">
+                <header>
+                    <h1>Conversation Analytics</h1>
+                    <p>Monitor AI performance and customer satisfaction in real-time.</p>
+                </header>
+                <div class="table-container glass-panel">
+                    <table id="analytics-table">
+                        <thead>
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>Customer</th>
+                                <th>Query</th>
+                                <th>Intent</th>
+                                <th>Response Time</th>
+                                <th>Feedback</th>
+                            </tr>
+                        </thead>
+                        <tbody id="analytics-body">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Knowledge Base Tab -->
+            <section id="kb-tab" class="tab-content hidden">
+                <header>
+                    <h1>Knowledge Base Manager</h1>
+                    <p>Upload and manage the PDF manuals and policies that the AI learns from.</p>
+                </header>
+                <div class="kb-container">
+                    <div class="upload-zone glass-panel" id="drop-zone">
+                        <div class="upload-icon">📄</div>
+                        <h3>Drag & Drop PDF here</h3>
+                        <p>or</p>
+                        <input type="file" id="file-input" accept=".pdf" hidden>
+                        <button class="btn primary" onclick="document.getElementById('file-input').click()">Browse Files</button>
+                    </div>
+
+                    <div class="files-list glass-panel">
+                        <h3>Current Knowledge Base</h3>
+                        <ul id="files-ul">
+                            <!-- Populated by JS -->
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Settings Tab -->
+            <section id="settings-tab" class="tab-content hidden">
+                <header>
+                    <h1>Admin Settings</h1>
+                    <p>Update your credentials. The AI uses this email to escalate issues to you.</p>
+                </header>
+                <div class="settings-container glass-panel">
+                    <form id="settings-form">
+                        <h3>Update Admin Credentials</h3>
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; color: var(--text-muted);">Admin Email</label>
+                            <input type="email" id="new-email" placeholder="New Admin Email" required>
+                        </div>
+                        <div style="margin-bottom: 20px;">
+                            <label style="display: block; margin-bottom: 5px; color: var(--text-muted);">New Password</label>
+                            <input type="password" id="new-password" placeholder="New Password" required>
+                        </div>
+                        <button type="submit" class="btn primary">Update Credentials</button>
+                    </form>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div id="modal-overlay" class="modal-overlay hidden">
+        <div class="modal glass-panel">
+            <h3 id="modal-title">Confirm Action</h3>
+            <p id="modal-desc">Are you sure?</p>
+            <div class="modal-actions">
+                <button id="modal-cancel" class="btn outline">Cancel</button>
+                <button id="modal-confirm" class="btn danger">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="admin.js"></script>
+</body>
+</html>

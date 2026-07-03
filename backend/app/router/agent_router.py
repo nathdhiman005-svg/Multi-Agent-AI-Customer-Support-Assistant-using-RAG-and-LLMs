@@ -1,6 +1,7 @@
 import os
 import time
-from fastapi import APIRouter, HTTPException, Depends
+import re
+from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from app.crews.support_crew import SupportCrew
@@ -25,18 +26,36 @@ class FeedbackRequest(BaseModel):
     score: int  # 1 for thumbs up, -1 for thumbs down
 
 @router.post("/chat", response_model=ChatResponse)
-def agent_chat(request: ChatRequest, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+def agent_chat(request: ChatRequest, background_tasks: BackgroundTasks, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     """
     Submit a customer query. Requires authentication.
     Logs interaction to DB.
     """
     start_time = time.time()
     try:
-        # Step 1: Route the query
-        intents = support_crew.route_query(request.query)
+        user_query_clean = request.query.strip().lower()
         
-        # Step 2: Process with specialized agent(s)
-        response_text = support_crew.process_query(request.query, intents, current_user.email)
+        if user_query_clean in ["yes", "y", "yes.", "yes please", "yes!", "yes, i want to escalate"]:
+            # Context Loss Fix: Fetch previous query from DB
+            last_log = db.query(ConversationLog).filter(ConversationLog.user_email == current_user.email).order_by(ConversationLog.timestamp.desc()).first()
+            summary = last_log.query if last_log else "Customer requested escalation for an unknown issue."
+            
+            # Trigger email agent asynchronously
+            background_tasks.add_task(support_crew.run_email_agent_async, current_user.email, summary)
+            
+            response_text = "Your issue is taken by the human support team. Thank you for reaching out our customer support."
+            intents = ["Escalation_Confirmed"]
+            
+        elif user_query_clean in ["no", "n", "no.", "no thanks", "no!"]:
+            response_text = "We are happy to solve your issue. For further query don't hesitate to reach out."
+            intents = ["Escalation_Declined"]
+            
+        else:
+            # Step 1: Route the query
+            intents = support_crew.route_query(request.query)
+            
+            # Step 2: Process with specialized agent(s)
+            response_text = support_crew.process_query(request.query, intents, current_user.email)
         
         # Calculate response time
         end_time = time.time()
@@ -75,3 +94,32 @@ def submit_feedback(request: FeedbackRequest, current_user: User = Depends(get_c
     db.add(feedback)
     db.commit()
     return {"message": "Feedback recorded successfully"}
+
+@router.get("/logs")
+def get_conversation_logs(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """
+    Fetch all conversation logs and their associated feedback for the admin dashboard.
+    """
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Not authorized")
+        
+    logs = db.query(ConversationLog).order_by(ConversationLog.timestamp.desc()).all()
+    feedbacks = db.query(Feedback).all()
+    
+    # Map feedback to logs
+    feedback_map = {f.conversation_id: f.satisfaction_score for f in feedbacks}
+    
+    result = []
+    for log in logs:
+        result.append({
+            "id": log.id,
+            "user_email": log.user_email,
+            "query": log.query,
+            "response": log.response,
+            "intent": log.intent,
+            "response_time_ms": log.response_time_ms,
+            "timestamp": log.timestamp.isoformat(),
+            "feedback": feedback_map.get(log.id, None)
+        })
+        
+    return {"logs": result}

@@ -320,6 +320,15 @@
 
                 localStorage.setItem('access_token', data.access_token);
                 localStorage.setItem('user_email', email);
+                
+                // Redirect admin to dashboard
+                if (data.is_admin) {
+                    localStorage.setItem('adminToken', data.access_token);
+                    closeAuthModal();
+                    window.location.href = 'admin.html';
+                    return;
+                }
+
                 closeAuthModal();
                 checkLoginState();
                 
@@ -340,6 +349,19 @@
         function logout() {
             localStorage.removeItem('access_token');
             localStorage.removeItem('user_email');
+            
+            // Clear chat history from the DOM so the next user has a fresh chat box
+            const chatMessagesContainer = document.getElementById('chat-messages');
+            if (chatMessagesContainer) {
+                Array.from(chatMessagesContainer.querySelectorAll('.message')).forEach(msg => msg.remove());
+            }
+            
+            // Close the chat window if it was open
+            const chatWin = document.getElementById('chat-window');
+            if (chatWin) {
+                chatWin.style.display = 'none';
+            }
+
             checkLoginState();
         }
 

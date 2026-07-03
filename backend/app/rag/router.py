@@ -1,7 +1,7 @@
 import os
 from fastapi import APIRouter, UploadFile, File, HTTPException
 from app.rag.document_loader import process_knowledge_base
-from app.rag.vector_store import query_knowledge_base
+from app.rag.vector_store import query_knowledge_base, delete_documents_by_source
 
 router = APIRouter(prefix="/rag", tags=["rag"])
 
@@ -48,6 +48,9 @@ def upload_file(file: UploadFile = File(...)):
         with open(file_path, "wb") as f:
             f.write(file.file.read())
             
+        # Delete old vectors associated with this file if it already existed
+        delete_documents_by_source(file.filename)
+            
         # Re-index the knowledge base
         process_result = process_knowledge_base()
         
@@ -70,6 +73,8 @@ def delete_file(filename: str):
         
     try:
         os.remove(file_path)
+        # Delete vectors from chroma memory
+        delete_documents_by_source(filename)
         # Re-index the knowledge base
         process_result = process_knowledge_base()
         

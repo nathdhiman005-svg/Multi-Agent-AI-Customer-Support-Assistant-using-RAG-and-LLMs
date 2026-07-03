@@ -39,26 +39,22 @@ class SupportCrew:
         active_agents = []
         active_tasks = []
         
-        # Instantiate a fresh tool per request for state tracking
-        from app.tools.email_tool import EscalationEmailTool
-        email_tool_instance = EscalationEmailTool()
-        
         # 1. Dynamically add the specialized agents and their research tasks
         for category in categories:
             if category == "Technical":
-                agent = self.agents.technical_support_agent(email_tool_instance)
+                agent = self.agents.technical_support_agent()
                 task = self.tasks.technical_task(agent, query, user_email)
             elif category == "Billing":
-                agent = self.agents.billing_support_agent(email_tool_instance)
+                agent = self.agents.billing_support_agent()
                 task = self.tasks.billing_task(agent, query, user_email)
             elif category == "Product":
-                agent = self.agents.product_support_agent(email_tool_instance)
+                agent = self.agents.product_support_agent()
                 task = self.tasks.product_task(agent, query, user_email)
             elif category == "Complaint":
-                agent = self.agents.complaint_support_agent(email_tool_instance)
+                agent = self.agents.complaint_support_agent()
                 task = self.tasks.complaint_task(agent, query, user_email)
             else:
-                agent = self.agents.general_faq_agent(email_tool_instance)
+                agent = self.agents.general_faq_agent()
                 task = self.tasks.faq_task(agent, query, user_email)
                 
             active_agents.append(agent)
@@ -81,3 +77,19 @@ class SupportCrew:
         
         result = crew.kickoff()
         return result.raw
+
+    def run_email_agent_async(self, customer_email: str, summary: str):
+        """Asynchronously triggers the email agent to send an escalation email."""
+        from app.tools.email_tool import EscalationEmailTool
+        email_tool_instance = EscalationEmailTool()
+        
+        email_agent = self.agents.email_agent(email_tool_instance)
+        email_task = self.tasks.email_task(email_agent, customer_email, summary)
+        
+        crew = Crew(
+            agents=[email_agent],
+            tasks=[email_task],
+            process=Process.sequential,
+            verbose=True
+        )
+        crew.kickoff()

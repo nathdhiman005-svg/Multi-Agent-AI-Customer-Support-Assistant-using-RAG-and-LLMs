@@ -21,10 +21,19 @@ class EscalationEmailTool(BaseTool):
             
         sender_email = os.getenv("EMAIL_SENDER_ADDRESS")
         app_password = os.getenv("EMAIL_APP_PASSWORD")
-        admin_email = os.getenv("ADMIN_EMAIL_ADDRESS")
+        
+        # Fetch Admin Email from DB dynamically
+        from app.database.session import SessionLocal
+        from app.models.user import User
+        
+        db = SessionLocal()
+        admin_user = db.query(User).filter(User.is_admin == True).first()
+        db.close()
+        
+        admin_email = admin_user.email if admin_user else None
 
         if not sender_email or not app_password or not admin_email:
-            return "Error: Email credentials are not fully configured in the environment variables."
+            return "Error: Email credentials or Admin user are not fully configured."
 
         try:
             # Connect to Gmail SMTP server

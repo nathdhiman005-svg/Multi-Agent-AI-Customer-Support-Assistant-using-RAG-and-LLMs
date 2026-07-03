@@ -39,3 +39,15 @@ app.mount("/static", StaticFiles(directory=frontend_path), name="static")
 @app.get("/")
 def root():
     return FileResponse(os.path.join(frontend_path, "index.html"))
+
+@app.get("/admin.html")
+def admin_page():
+    return FileResponse(os.path.join(frontend_path, "admin.html"))
+
+@app.get("/admin.css")
+def admin_css():
+    return FileResponse(os.path.join(frontend_path, "admin.css"))
+
+@app.get("/admin.js")
+def admin_js():
+    return FileResponse(os.path.join(frontend_path, "admin.js"))

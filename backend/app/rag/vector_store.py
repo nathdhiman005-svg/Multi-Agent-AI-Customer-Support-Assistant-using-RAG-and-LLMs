@@ -26,3 +26,9 @@ def query_knowledge_base(query_text: str, n_results: int = 3):
         n_results=n_results
     )
     return results
+
+def delete_documents_by_source(filename: str):
+    """Deletes all chunks from ChromaDB that came from a specific file."""
+    collection.delete(
+        where={"source": filename}
+    )
