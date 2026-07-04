@@ -9,9 +9,12 @@ from app.auth.router import get_current_user
 from app.models.user import User
 from app.database.session import get_db
 from app.models.analytics import ConversationLog, Feedback
+from app.state.manager import DialogueStateManager
+from app.state.state_formatter import StateFormatter
 
 router = APIRouter(prefix="/agent", tags=["agent"])
 support_crew = SupportCrew()
+formatter = StateFormatter()
 
 class ChatRequest(BaseModel):
     query: str
@@ -51,11 +54,18 @@ def agent_chat(request: ChatRequest, background_tasks: BackgroundTasks, current_
             intents = ["Escalation_Declined"]
             
         else:
-            # Step 1: Route the query
-            intents = support_crew.route_query(request.query)
+            # Step 1: Process through Dialogue State Manager
+            manager = DialogueStateManager(db)
+            state_obj = manager.process_message(current_user.email, request.query)
             
-            # Step 2: Process with specialized agent(s)
-            response_text = support_crew.process_query(request.query, intents, current_user.email)
+            # Format the state
+            formatted_state = formatter.format(state_obj.state_data)
+            
+            # Step 2: Route the query using the dialogue state
+            intents = support_crew.route_query(request.query, formatted_state)
+            
+            # Step 3: Process with specialized agent(s) passing the dialogue state and user_email
+            response_text = support_crew.process_query(request.query, formatted_state, intents, current_user.email)
         
         # Calculate response time
         end_time = time.time()
@@ -76,6 +86,7 @@ def agent_chat(request: ChatRequest, background_tasks: BackgroundTasks, current_
         
         return ChatResponse(intent=", ".join(intents), response=response_text, conversation_id=log_entry.id)
     except Exception as e:
+        db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/feedback")

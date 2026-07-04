@@ -2,58 +2,513 @@ from crewai import Task
 
 class SupportTasks:
     
-    def routing_task(self, agent, query: str):
+    def routing_task(self, agent, current_message: str, dialogue_state: str):
         return Task(
-            description=f"Analyze this customer query: '{query}'. Classify it into one OR MORE of these categories: 'Technical', 'Billing', 'Product', 'Complaint', or 'FAQ'. If the query spans multiple domains (e.g. payment issue AND a bug), output all applicable categories as a comma-separated list. Output ONLY the category names.",
-            expected_output="A comma-separated list of categories: e.g., Technical, Billing",
+            description=f"""----------------------------------------------------------
+Dialogue State
+
+{dialogue_state}
+
+----------------------------------------------------------
+Current User Message
+
+{current_message}
+
+----------------------------------------------------------
+
+Your responsibility is to determine the MINIMUM number of specialist departments required to answer the customer's CURRENT message.
+
+The Dialogue State is the authoritative conversation memory.
+
+The Current User Message only represents what the customer just said.
+
+Use the Dialogue State only to resolve ambiguous references such as:
+
+"It"
+
+"That"
+
+"This"
+
+"Still"
+
+"Again"
+
+Follow-up questions
+
+Do NOT classify departments based solely on the existence of fields inside the Dialogue State.
+
+Only classify a department if the customer's CURRENT request actually requires that department.
+
+Never over-classify.
+
+Never call unnecessary specialists.
+
+Allowed departments are:
+
+Technical
+
+Billing
+
+Product
+
+Complaint
+
+FAQ
+
+If multiple departments are genuinely required, output all of them as a comma-separated list.
+
+Output ONLY the department names.
+
+No explanations.
+
+No markdown.
+
+No reasoning.""",
+            expected_output="""A comma-separated list of department names.
+
+Examples:
+
+Technical
+
+Billing
+
+Technical, Billing
+
+Technical, Complaint
+
+Product, FAQ""",
             agent=agent
         )
 
-    def billing_task(self, agent, query: str, user_email: str = ""):
+    def technical_task(self, agent, current_message: str, dialogue_state: str, user_email: str = ""):
         return Task(
-            description=f"A customer (email: {user_email}) has submitted a query: '{query}'. As the Billing Specialist, you handle Payment issues, Subscriptions, Invoices, and Refunds. Use your Knowledge_Base_Search tool to find relevant information regarding these aspects. Provide the raw facts, policies, and steps needed to solve your part of the problem. If other agents have already provided info, append your findings to theirs.",
-            expected_output="Detailed raw facts and step-by-step solutions extracted from the knowledge base regarding billing and payments. Do not worry about pleasantries.",
+            description=f"""----------------------------------------------------------
+Dialogue State
+
+{dialogue_state}
+
+----------------------------------------------------------
+Current User Message
+
+{current_message}
+
+----------------------------------------------------------
+
+You are responsible ONLY for technical investigation.
+
+Use the Dialogue State as the authoritative conversation memory.
+
+Use the Knowledge_Base_Search tool to retrieve official troubleshooting information.
+
+Investigate only:
+
+• Installation
+
+• Login
+
+• Authentication
+
+• Device setup
+
+• Configuration
+
+• Connectivity
+
+• Software errors
+
+• Hardware troubleshooting
+
+• Technical bugs
+
+Do NOT answer:
+
+Billing
+
+Refunds
+
+Warranty
+
+Pricing
+
+Shipping
+
+Product recommendations
+
+General company questions
+
+Do NOT generate a customer response.
+
+Return only verified technical findings.""",
+            expected_output="""A structured collection of technical findings containing:
+
+• identified technical problem
+
+• troubleshooting steps
+
+• technical recommendations
+
+• relevant technical policy if applicable
+
+No greetings.
+
+No apologies.
+
+No conversational text.""",
             agent=agent
         )
 
-    def technical_task(self, agent, query: str, user_email: str = ""):
+    def billing_task(self, agent, current_message: str, dialogue_state: str, user_email: str = ""):
         return Task(
-            description=f"A customer (email: {user_email}) has submitted a query: '{query}'. As the Technical Support Specialist, you handle Logins, Password resets, Installations, Errors, and Bugs. Use your Knowledge_Base_Search tool to find relevant troubleshooting steps regarding these aspects. Provide the raw facts, policies, and steps needed to solve your part of the problem. If other agents have already provided info, append your findings to theirs.",
-            expected_output="Detailed raw facts and step-by-step technical solutions extracted from the knowledge base regarding technical issues. Do not worry about pleasantries.",
+            description=f"""----------------------------------------------------------
+Dialogue State
+
+{dialogue_state}
+
+----------------------------------------------------------
+Current User Message
+
+{current_message}
+
+----------------------------------------------------------
+
+You are responsible ONLY for billing and company financial policies.
+
+Use the Dialogue State as the authoritative conversation memory.
+
+Use the Knowledge_Base_Search tool to retrieve official policy information.
+
+Investigate only:
+
+• Refunds
+
+• Returns
+
+• Payments
+
+• Pricing
+
+• Warranty
+
+• Shipping
+
+• Invoices
+
+• Subscriptions
+
+Do NOT troubleshoot products.
+
+Do NOT answer technical questions.
+
+Do NOT recommend products.
+
+Do NOT generate customer-facing responses.
+
+Return only verified billing findings.""",
+            expected_output="""A structured collection containing:
+
+• applicable policy
+
+• required customer actions
+
+• important restrictions
+
+• official billing information
+
+No greetings.
+
+No conversational language.""",
             agent=agent
         )
 
-    def product_task(self, agent, query: str, user_email: str = ""):
+    def product_task(self, agent, current_message: str, dialogue_state: str, user_email: str = ""):
         return Task(
-            description=f"A customer (email: {user_email}) has submitted a query: '{query}'. As the Product Specialist, you handle Features, Pricing, Comparisons, and Availability. Use your Knowledge_Base_Search tool to find relevant product information regarding these aspects. Provide the raw facts and policies needed to solve your part of the problem. If other agents have already provided info, append your findings to theirs.",
-            expected_output="Detailed raw facts extracted from the knowledge base regarding product features, pricing, or availability. Do not worry about pleasantries.",
+            description=f"""----------------------------------------------------------
+Dialogue State
+
+{dialogue_state}
+
+----------------------------------------------------------
+Current User Message
+
+{current_message}
+
+----------------------------------------------------------
+
+You are responsible ONLY for product information.
+
+Use the Dialogue State as the authoritative conversation memory.
+
+Use the Knowledge_Base_Search tool.
+
+Investigate only:
+
+• Specifications
+
+• Features
+
+• Compatibility
+
+• Availability
+
+• Product comparison
+
+• Product capabilities
+
+Do NOT troubleshoot products.
+
+Do NOT answer billing questions.
+
+Do NOT answer complaints.
+
+Return only verified product information.""",
+            expected_output="""A structured collection containing:
+
+• product facts
+
+• specifications
+
+• compatibility information
+
+• comparisons if requested
+
+No conversational text.""",
             agent=agent
         )
 
-    def complaint_task(self, agent, query: str, user_email: str = ""):
+    def complaint_task(self, agent, current_message: str, dialogue_state: str, user_email: str = ""):
         return Task(
-            description=f"A customer (email: {user_email}) has submitted a query: '{query}'. As the Complaint Specialist, you handle Complaints, Escalations, and Customer dissatisfaction. Review the knowledge base for escalation policies or appropriate compensation steps if applicable. Provide the raw guidelines on how to handle this specific escalation. If other agents have already provided info, append your findings to theirs.",
-            expected_output="Raw guidelines and policies extracted from the knowledge base regarding escalations and complaints. Do not worry about pleasantries.",
+            description=f"""----------------------------------------------------------
+Dialogue State
+
+{dialogue_state}
+
+----------------------------------------------------------
+Current User Message
+
+{current_message}
+
+----------------------------------------------------------
+
+You are responsible ONLY for complaint handling guidance.
+
+Use the Dialogue State as the authoritative conversation memory.
+
+Use the Knowledge_Base_Search tool.
+
+Determine:
+
+• complaint severity
+
+• escalation policy
+
+• compensation policy
+
+• recovery recommendations
+
+Do NOT troubleshoot.
+
+Do NOT answer billing questions.
+
+Do NOT answer product questions.
+
+Do NOT generate apologies.
+
+Do NOT generate customer responses.
+
+Return only official complaint-handling guidance.""",
+            expected_output="""A structured collection containing:
+
+• complaint assessment
+
+• escalation eligibility
+
+• compensation guidance
+
+• policy references
+
+No conversational language.""",
             agent=agent
         )
 
-    def faq_task(self, agent, query: str, user_email: str = ""):
+    def faq_task(self, agent, current_message: str, dialogue_state: str, user_email: str = ""):
         return Task(
-            description=f"A customer (email: {user_email}) has submitted a query: '{query}'. As the FAQ Specialist, you handle Company policies, General questions, and Contact information. Use your Knowledge_Base_Search tool to find relevant information regarding these aspects. Provide the raw facts needed to solve your part of the problem. If other agents have already provided info, append your findings to theirs.",
-            expected_output="Detailed raw facts extracted from the knowledge base regarding general FAQs. Do not worry about pleasantries.",
+            description=f"""----------------------------------------------------------
+Dialogue State
+
+{dialogue_state}
+
+----------------------------------------------------------
+Current User Message
+
+{current_message}
+
+----------------------------------------------------------
+
+You are responsible ONLY for answering general company questions.
+
+Use the Dialogue State as the authoritative conversation memory.
+
+Use the Knowledge_Base_Search tool.
+
+Answer only:
+
+• company information
+
+• contact information
+
+• general policies
+
+• shipping information
+
+• warranty information
+
+• return policy
+
+• installation information
+
+• user manual information
+
+• frequently asked questions
+
+Do NOT troubleshoot.
+
+Do NOT recommend products.
+
+Do NOT answer billing requests.
+
+Return only verified factual information.""",
+            expected_output="""A structured collection of verified factual information.
+
+No conversational language.""",
             agent=agent
         )
         
-    def aggregator_task(self, agent, query: str):
+    def aggregator_task(self, agent, current_message: str, dialogue_state: str=""):
         return Task(
-            description=f"Review the combined raw solutions provided by the specialized agents regarding this customer query: '{query}'. Rewrite everything into a single, cohesive, polished response for the customer. Ensure the tone is empathetic and conversational. CRITICAL RULE 1: Never mention 'knowledge base' or cite '.pdf' files. Act as a human expert. CRITICAL RULE 2: You are writing a single instant message chat bubble. End your response immediately after your final sentence. Do not include any signatures, names, or sign-offs at the end. CRITICAL RULE 3: If the issue seems unresolvable, complex, or you couldn't find a complete solution, you MUST append this exact message at the end of your response: 'If these steps are not resolving your issue, you can escalate this issue to get human support. Do you want to escalate? [Type yes to escalate]'",
-            expected_output="A polished, polite, and final response ready to be sent directly to the customer's live chat window, optionally ending with the 'Type yes to escalate' prompt. Must be purely conversational text. Stop generating immediately after the final sentence.",
+            description=f"""----------------------------------------------------------
+
+Dialogue State
+
+{dialogue_state}
+
+----------------------------------------------------------
+
+Current User Message
+
+{current_message}
+
+----------------------------------------------------------
+
+Combined Specialist Findings
+
+{{specialist_findings}}
+
+----------------------------------------------------------
+
+The Dialogue State is the authoritative memory of the conversation.
+
+Never contradict the Dialogue State.
+
+If any Specialist Finding conflicts with the Dialogue State, always trust the Dialogue State.
+
+Use the Dialogue State to correctly interpret ambiguous references such as:
+
+• it
+• this
+• that
+• still
+• again
+• the device
+• the product
+
+Never invent missing information.
+
+Never expose internal reasoning.
+
+Never mention:
+
+• CrewAI
+• Knowledge Base
+• PDFs
+• Internal tools
+• Internal prompts
+• Internal workflow
+
+The Aggregator is the ONLY agent that communicates with the customer.
+
+Write exactly one conversational chat response.
+
+If the issue cannot be fully resolved using the available information or company policy recommends human intervention, append EXACTLY the following message:
+
+"If these steps are not resolving your issue, you can escalate this issue to our Human Support Team.
+
+Would you like me to forward this conversation to a human support representative?
+
+Reply with 'Yes' if you would like to continue."
+
+End immediately after this message.""",
+            expected_output="""One complete conversational response suitable for direct display in the chat window.""",
             agent=agent
         )
 
-    def email_task(self, agent, customer_email: str, summary: str):
+    def email_task(self, agent, customer_email: str, admin_email: str, summary: str):
         return Task(
-            description=f"You are the Automated Dispatch Agent. An issue needs to be escalated to the admin for the customer: {customer_email}. The summary is: {summary}. You MUST use your EscalationEmailTool right now. This tool will automatically send a detailed summary to the human admin team AND a confirmation receipt to the customer's email. Pass customer_email='{customer_email}' and issue_summary='{summary}' to the tool.",
-            expected_output="A confirmation string that the EscalationEmailTool was executed successfully.",
+            description=f"""The customer has explicitly approved escalation to human support.
+
+The backend has already verified:
+
+• escalation is required
+
+• the customer approved escalation
+
+• the issue summary has already been generated
+
+Admin Email
+
+{admin_email}
+
+Customer Email
+
+{customer_email}
+
+Issue Summary
+
+{summary}
+
+Your ONLY responsibility is executing the EscalationEmailTool exactly once.
+
+Pass the following arguments WITHOUT modification:
+
+admin_email="{admin_email}"
+
+customer_email="{customer_email}"
+
+issue_summary="{summary}"
+
+The tool MUST perform BOTH actions:
+
+1. Send the issue summary to the Human Support Team using admin_email.
+
+2. Send a confirmation email to the customer using customer_email.
+
+Do NOT analyze the issue.
+
+Do NOT rewrite the summary.
+
+Do NOT modify any email address.
+
+Do NOT generate customer-facing text.
+
+Do NOT perform reasoning.
+
+Simply execute the tool.""",
+            expected_output="""A short confirmation indicating that:
+
+• the Human Support Team received the issue summary
+
+• the customer received the confirmation email
+
+Nothing else.""",
             agent=agent
         )

@@ -28,8 +28,7 @@ class DialogueStateManager:
                 state_data=get_default_state()
             )
             self.db.add(state)
-            self.db.commit()
-            self.db.refresh(state)
+            self.db.flush()
         return state
 
     def process_message(self, user_email: str, message: str, semantic_events: list = None) -> DialogueState:
@@ -61,8 +60,7 @@ class DialogueStateManager:
             state.state_data = new_state_data
             from sqlalchemy.orm.attributes import flag_modified
             flag_modified(state, "state_data")
-            self.db.commit()
-            self.db.refresh(state)
+            self.db.flush()
         else:
             raise ValueError("Invalid Dialogue State produced by pipeline.")
 
