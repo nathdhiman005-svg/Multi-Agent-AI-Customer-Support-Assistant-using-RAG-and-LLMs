@@ -5,6 +5,8 @@ from .normalizer import EntityNormalizer
 from .rules_engine import StateRulesEngine
 from .merge_engine import StateMergeEngine
 from .state_validator import StateValidator
+from .llm_interpreter import LLMInterpreter
+from .llm_validator import LLMValidator
 
 class DialogueStateManager:
     def __init__(self, db: Session):
@@ -14,6 +16,8 @@ class DialogueStateManager:
         self.rules_engine = StateRulesEngine()
         self.merge_engine = StateMergeEngine()
         self.state_validator = StateValidator()
+        self.llm_interpreter = LLMInterpreter()
+        self.llm_validator = LLMValidator()
 
     def get_or_create_state(self, user_email: str) -> DialogueState:
         """Retrieves existing state or creates a valid default state if none exists."""
@@ -40,8 +44,13 @@ class DialogueStateManager:
         extracted_entities = self.extractor.extract(message)
         normalized_entities = self.normalizer.normalize(extracted_entities)
 
-        # 2. Business Rules
-        events = semantic_events or []
+        # 2. Business Rules & LLM Intake
+        if semantic_events is None:
+            raw_events = self.llm_interpreter.interpret(message, state_data)
+            events = self.llm_validator.validate(raw_events)
+        else:
+            events = self.llm_validator.validate(semantic_events)
+            
         state_updates = self.rules_engine.apply_rules(state_data, normalized_entities, events)
 
         # 3. Merging

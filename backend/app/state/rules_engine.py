@@ -17,7 +17,13 @@ class StateRulesEngine:
             active_issues = current_state.get("conversation", {}).get("active_issues", [])
             resolved_issues = current_state.get("conversation", {}).get("resolved_issues", [])
             
-            updates["conversation"]["resolved_issues"] = resolved_issues + active_issues
+            # Safely combine without duplicates
+            new_resolved = list(resolved_issues)
+            for issue in active_issues:
+                if issue not in new_resolved:
+                    new_resolved.append(issue)
+            
+            updates["conversation"]["resolved_issues"] = new_resolved
             updates["conversation"]["active_issues"] = []
             
         for event in events:
