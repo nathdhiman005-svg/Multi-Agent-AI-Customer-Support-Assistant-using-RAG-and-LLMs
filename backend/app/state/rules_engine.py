@@ -53,4 +53,35 @@ class StateRulesEngine:
                 updates["conversation"]["previous_intent"] = current_state.get("conversation", {}).get("current_intent")
                 updates["conversation"]["current_intent"] = new_intent
                 
+        # Escalation Logic (workflow.requires_human)
+        # Default to False
+        updates["workflow"]["requires_human"] = False
+        
+        # We need the current active issues to check for unresolved status
+        active = updates.get("conversation", {}).get("active_issues", current_state.get("conversation", {}).get("active_issues", []))
+        
+        # Check active events for escalation triggers
+        for event in events:
+            event_type = event.get("event")
+            
+            # Rule 1: Customer explicitly requests a human agent
+            if event_type == "ESCALATION_REQUESTED":
+                updates["workflow"]["requires_human"] = True
+                
+            # Rule 2: Company policy requires manual handling
+            elif event_type == "MANUAL_APPROVAL_REQUIRED":
+                updates["workflow"]["requires_human"] = True
+                
+            # Rule 3: Customer is frustrated AND the issue is still unresolved
+            elif event_type == "CUSTOMER_FRUSTRATED" and len(active) > 0:
+                updates["workflow"]["requires_human"] = True
+                
+            # Rule 4: Repeated troubleshooting has failed
+            elif event_type == "TROUBLESHOOTING_FAILED":
+                updates["workflow"]["requires_human"] = True
+                
+            # Rule 5: A specialist explicitly recommends human escalation
+            elif event_type == "SPECIALIST_ESCALATION_RECOMMENDED":
+                updates["workflow"]["requires_human"] = True
+                
         return updates

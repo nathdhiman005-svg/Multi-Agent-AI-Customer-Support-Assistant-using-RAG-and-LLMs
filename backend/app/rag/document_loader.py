@@ -3,6 +3,8 @@ import uuid
 from pypdf import PdfReader
 from app.rag.vector_store import add_documents_to_collection
 
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+
 def load_and_split_pdf(file_path: str, chunk_size: int = 1000, overlap: int = 100):
     reader = PdfReader(file_path)
     text = ""
@@ -11,10 +13,12 @@ def load_and_split_pdf(file_path: str, chunk_size: int = 1000, overlap: int = 10
         if page_text:
             text += page_text
             
-    # Simple chunking with overlap
-    chunks = []
-    for i in range(0, len(text), chunk_size - overlap):
-        chunks.append(text[i:i+chunk_size])
+    text_splitter = RecursiveCharacterTextSplitter(
+        chunk_size=chunk_size,
+        chunk_overlap=overlap,
+        separators=["\n\n", "\n", ".", " ", ""]
+    )
+    chunks = text_splitter.split_text(text)
     return chunks
 
 def process_knowledge_base(kb_dir: str = "../knowledge_base"):

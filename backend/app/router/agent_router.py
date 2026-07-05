@@ -39,12 +39,14 @@ def agent_chat(request: ChatRequest, background_tasks: BackgroundTasks, current_
         user_query_clean = request.query.strip().lower()
         
         if user_query_clean in ["yes", "y", "yes.", "yes please", "yes!", "yes, i want to escalate"]:
-            # Context Loss Fix: Fetch previous query from DB
-            last_log = db.query(ConversationLog).filter(ConversationLog.user_email == current_user.email).order_by(ConversationLog.timestamp.desc()).first()
-            summary = last_log.query if last_log else "Customer requested escalation for an unknown issue."
+            # Fix Architectural Violation: Use Dialogue State instead of Conversation History
+            manager = DialogueStateManager(db)
+            state_obj = manager.get_or_create_state(current_user.email)
+            active_issues = state_obj.state_data.get("conversation", {}).get("active_issues", [])
+            summary = ", ".join(active_issues) if active_issues else "Customer requested escalation."
             
             # Trigger email agent asynchronously
-            background_tasks.add_task(support_crew.run_email_agent_async, current_user.email, summary)
+            background_tasks.add_task(support_crew.run_email_agent_async, current_user.email, current_user.email, summary)
             
             response_text = "Your issue is taken by the human support team. Thank you for reaching out our customer support."
             intents = ["Escalation_Confirmed"]
@@ -66,6 +68,15 @@ def agent_chat(request: ChatRequest, background_tasks: BackgroundTasks, current_
             
             # Step 3: Process with specialized agent(s) passing the dialogue state and user_email
             response_text = support_crew.process_query(request.query, formatted_state, intents, current_user.email)
+            
+            # Step 4: Deterministic Human Escalation
+            requires_human = state_obj.state_data.get("workflow", {}).get("requires_human", False)
+            
+            ESCALATION_MSG = "\n\nIf these steps are not resolving your issue, you can escalate this issue to our Human Support Team.\n\nWould you like me to forward this conversation to a human support representative?\n\nReply with 'Yes' if you would like to continue."
+            
+            if requires_human:
+                if "If these steps are not resolving your issue" not in response_text:
+                    response_text += ESCALATION_MSG
         
         # Calculate response time
         end_time = time.time()

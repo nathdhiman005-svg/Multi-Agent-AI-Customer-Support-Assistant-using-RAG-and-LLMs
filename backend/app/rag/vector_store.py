@@ -21,12 +21,28 @@ def add_documents_to_collection(documents: list[str], metadatas: list[dict], ids
         ids=ids
     )
 
-def query_knowledge_base(query_text: str, n_results: int = 3):
+def query_knowledge_base(query_text: str, n_results: int = 7, max_distance: float = 0.6):
     results = collection.query(
         query_texts=[query_text],
         n_results=n_results
     )
-    return results
+    
+    filtered_results = {
+        'ids': [[]],
+        'distances': [[]],
+        'metadatas': [[]],
+        'documents': [[]]
+    }
+    
+    if results.get('distances') and len(results['distances'][0]) > 0:
+        for i in range(len(results['distances'][0])):
+            if results['distances'][0][i] <= max_distance:
+                filtered_results['ids'][0].append(results['ids'][0][i])
+                filtered_results['distances'][0].append(results['distances'][0][i])
+                filtered_results['metadatas'][0].append(results['metadatas'][0][i])
+                filtered_results['documents'][0].append(results['documents'][0][i])
+                
+    return filtered_results
 
 def delete_documents_by_source(filename: str):
     """Deletes all chunks from ChromaDB that came from a specific file."""

@@ -106,7 +106,7 @@ You only provide verified factual information for the Response Aggregator.''',
             verbose=True,
             allow_delegation=False,
             tools=[self.rag_tool],
-            llm=self.phi4_mini
+            llm=self.llama_3b
         )
 
     def product_support_agent(self):
@@ -162,7 +162,7 @@ You only provide complaint-handling guidance for the Response Aggregator.''',
     def response_aggregator_agent(self):
         return Agent(
             role='Lead Customer Communications Manager',
-            goal="Transform the specialists' findings into one natural, professional, empathetic, and accurate customer response while treating the Dialogue State as the authoritative conversation memory.",
+            goal="Transform the verified Specialist Findings into one clear, accurate, professional, and conversational customer response while treating the Dialogue State as the authoritative conversation memory. Do not add, infer, or modify any factual information.",
             backstory='''You are the final voice of NovaCart Electronics.
 
 You never search the knowledge base.
@@ -180,7 +180,7 @@ Your responsibility is to transform the specialists' findings into one clear, co
 You never expose internal tools, internal reasoning, CrewAI, PDFs, or the knowledge base.''',
             verbose=True,
             allow_delegation=False,
-            llm=self.mistral_7b
+            llm=self.qwen_7b
         )
 
     def email_agent(self, email_tool: EscalationEmailTool):

@@ -21,6 +21,11 @@ If no events apply, output an empty array [].
 
 Allowed events:
 - {{"event": "REFUND_REQUESTED"}}
+- {{"event": "ESCALATION_REQUESTED"}}
+- {{"event": "CUSTOMER_FRUSTRATED"}}
+- {{"event": "MANUAL_APPROVAL_REQUIRED"}}
+- {{"event": "TROUBLESHOOTING_FAILED"}}
+- {{"event": "SPECIALIST_ESCALATION_RECOMMENDED"}}
 - {{"event": "ISSUE_OPENED", "issue": "<description>"}}
 - {{"event": "ISSUE_RESOLVED", "issue": "<description>"}}
 - {{"event": "INTENT_CHANGED", "intent": "<intent_name>"}}

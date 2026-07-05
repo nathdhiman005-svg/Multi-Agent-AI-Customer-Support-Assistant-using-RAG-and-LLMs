@@ -38,3 +38,4 @@ project_report.md
 # Databases
 chroma_db/
 *.db
+*.sqlite3

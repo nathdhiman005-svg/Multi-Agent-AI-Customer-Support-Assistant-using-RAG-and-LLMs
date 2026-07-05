@@ -14,7 +14,7 @@ class RAGSearchTool(BaseTool):
     args_schema: type[BaseModel] = RAGSearchInput
 
     def _run(self, query: str) -> str:
-        results = query_knowledge_base(query, n_results=3)
+        results = query_knowledge_base(query)
         if not results or not results['documents'] or not results['documents'][0]:
             return "No relevant information found in the knowledge base."
         

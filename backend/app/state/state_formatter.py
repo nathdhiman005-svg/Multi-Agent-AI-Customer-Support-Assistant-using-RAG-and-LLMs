@@ -62,6 +62,12 @@ class StateFormatter:
             output.append(str(payment))
             output.append("")
             
+        # 5. Workflow (Always output requires_human)
+        requires_human = state_data.get("workflow", {}).get("requires_human", False)
+        output.append("workflow.requires_human:")
+        output.append(str(requires_human))
+        output.append("")
+            
         # Join lines
         final_str = "\n".join(output).strip()
         

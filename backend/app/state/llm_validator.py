@@ -1,6 +1,6 @@
 class LLMValidator:
     def __init__(self):
-        self.allowed_events = ["REFUND_REQUESTED", "ISSUE_OPENED", "ISSUE_RESOLVED", "INTENT_CHANGED"]
+        self.allowed_events = ["REFUND_REQUESTED", "ESCALATION_REQUESTED", "CUSTOMER_FRUSTRATED", "MANUAL_APPROVAL_REQUIRED", "TROUBLESHOOTING_FAILED", "SPECIALIST_ESCALATION_RECOMMENDED", "ISSUE_OPENED", "ISSUE_RESOLVED", "INTENT_CHANGED"]
 
     def validate(self, events: list) -> list:
         """
