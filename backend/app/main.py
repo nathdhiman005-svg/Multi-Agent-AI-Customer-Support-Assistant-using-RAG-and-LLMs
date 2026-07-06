@@ -7,35 +7,14 @@ import os
 from app.models.base import Base
 from app.models.user import User
 from app.models.analytics import ConversationLog, Feedback
-from app.models.state import DialogueState, get_default_state
-from app.database.session import engine, SessionLocal
+from app.models.state import DialogueState
+from app.database.session import engine
 from app.auth.router import router as auth_router
 from app.rag.router import router as rag_router
 from app.router.agent_router import router as agent_router
 
 # Create tables if they don't exist
 Base.metadata.create_all(bind=engine)
-
-# Automatically seed default dialogue states for any existing users
-def init_states():
-    db = SessionLocal()
-    try:
-        users = db.query(User).all()
-        for user in users:
-            existing_state = db.query(DialogueState).filter(DialogueState.user_email == user.email).first()
-            if not existing_state:
-                new_state = DialogueState(
-                    user_email=user.email,
-                    state_data=get_default_state()
-                )
-                db.add(new_state)
-        db.commit()
-    except Exception as e:
-        print(f"Error initializing states: {e}")
-    finally:
-        db.close()
-
-init_states()
 
 app = FastAPI(
     title="Customer Support AI Backend",

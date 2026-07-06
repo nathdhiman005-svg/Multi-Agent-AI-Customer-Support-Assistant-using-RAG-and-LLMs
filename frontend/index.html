@@ -366,6 +366,7 @@
         }
 
         // --- Chat Logic ---
+        const currentConversationId = crypto.randomUUID();
         const chatWindow = document.getElementById('chat-window');
         const chatMessages = document.getElementById('chat-messages');
         const chatInput = document.getElementById('chat-input');
@@ -474,7 +475,7 @@
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`
                     },
-                    body: JSON.stringify({ query: query })
+                    body: JSON.stringify({ query: query, conversation_id: currentConversationId })
                 });
                 
                 if (response.status === 401) {

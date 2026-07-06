@@ -18,6 +18,7 @@ formatter = StateFormatter()
 
 class ChatRequest(BaseModel):
     query: str
+    conversation_id: str
 
 class ChatResponse(BaseModel):
     intent: str
@@ -41,7 +42,7 @@ def agent_chat(request: ChatRequest, background_tasks: BackgroundTasks, current_
         if user_query_clean in ["yes", "y", "yes.", "yes please", "yes!", "yes, i want to escalate"]:
             # Fix Architectural Violation: Use Dialogue State instead of Conversation History
             manager = DialogueStateManager(db)
-            state_obj = manager.get_or_create_state(current_user.email)
+            state_obj = manager.get_or_create_state(current_user.email, request.conversation_id)
             active_issues = state_obj.state_data.get("conversation", {}).get("active_issues", [])
             summary = ", ".join(active_issues) if active_issues else "Customer requested escalation."
             
@@ -58,7 +59,7 @@ def agent_chat(request: ChatRequest, background_tasks: BackgroundTasks, current_
         else:
             # Step 1: Process through Dialogue State Manager
             manager = DialogueStateManager(db)
-            state_obj = manager.process_message(current_user.email, request.query)
+            state_obj = manager.process_message(current_user.email, request.query, request.conversation_id)
             
             # Format the state
             formatted_state = formatter.format(state_obj.state_data)

@@ -19,24 +19,34 @@ class DialogueStateManager:
         self.llm_interpreter = LLMInterpreter()
         self.llm_validator = LLMValidator()
 
-    def get_or_create_state(self, user_email: str) -> DialogueState:
+    def get_or_create_state(self, user_email: str, conversation_id: str) -> DialogueState:
         """Retrieves existing state or creates a valid default state if none exists."""
-        state = self.db.query(DialogueState).filter(DialogueState.user_email == user_email).first()
+        print(f"DEBUG: Conversation ID received from frontend: {conversation_id}")
+        state = self.db.query(DialogueState).filter(
+            DialogueState.user_email == user_email,
+            DialogueState.conversation_id == conversation_id
+        ).first()
+        
         if not state:
+            print(f"DEBUG: Created new Dialogue State for conversation {conversation_id}")
             state = DialogueState(
                 user_email=user_email,
+                conversation_id=conversation_id,
                 state_data=get_default_state()
             )
             self.db.add(state)
             self.db.flush()
+        else:
+            print(f"DEBUG: Loaded existing Dialogue State for conversation {conversation_id}")
+            
         return state
 
-    def process_message(self, user_email: str, message: str, semantic_events: list = None) -> DialogueState:
+    def process_message(self, user_email: str, message: str, conversation_id: str, semantic_events: list = None) -> DialogueState:
         """
         Orchestrates the pre-processing pipeline.
         Note: semantic_events will be passed by the LLM Interpreter in Phase 3.
         """
-        state = self.get_or_create_state(user_email)
+        state = self.get_or_create_state(user_email, conversation_id)
         state_data = state.state_data
 
         # 1. Extraction & Normalization
@@ -60,6 +70,7 @@ class DialogueStateManager:
             state.state_data = new_state_data
             from sqlalchemy.orm.attributes import flag_modified
             flag_modified(state, "state_data")
+            print(f"DEBUG: Saving Dialogue State for conversation {state.conversation_id}")
             self.db.flush()
         else:
             raise ValueError("Invalid Dialogue State produced by pipeline.")

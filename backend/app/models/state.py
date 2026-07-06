@@ -34,5 +34,6 @@ class DialogueState(Base):
     __tablename__ = "dialogue_states"
     
     id = Column(Integer, primary_key=True, index=True)
-    user_email = Column(String, unique=True, index=True, nullable=False)
+    user_email = Column(String, index=True, nullable=False)
+    conversation_id = Column(String, unique=True, index=True, nullable=False)
     state_data = Column(JSON, nullable=False, default=get_default_state)
