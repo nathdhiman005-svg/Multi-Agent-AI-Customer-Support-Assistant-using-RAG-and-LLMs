@@ -134,62 +134,7 @@ Maintains isolated conversation state using unique conversation IDs, enabling fo
 
 # System Architecture
 
-                               Browser
-                                  │
-                                  ▼
-                         Frontend (HTML/CSS/JS)
-                                  │
-                                  ▼
-                            FastAPI Backend
-                                  │
-                ┌─────────────────┴─────────────────┐
-                ▼                                   ▼
-        JWT Authentication               Dialogue State Pipeline
-                                                    │
-        ┌────────────────────────────────────────────────────────┐
-        ▼                                                        ▼
- Entity Extractor → Normalizer → LLM Interpreter → State Validator
-                                      │
-                                      ▼
-                                Rules Engine
-                                      │
-                                      ▼
-                                Merge Engine
-                                      │
-                                      ▼
-                              State Formatter
-                                      │
-                                      ▼
-                           Intent Router Agent
-                                      │
-      ┌─────────────┬─────────────┬─────────────┬─────────────┬
-      ▼             ▼             ▼             ▼             ▼
- Billing      Technical      Product      Complaint         FAQ
- Specialist    Specialist    Specialist    Specialist    Specialist
-      │             │             │             │             │
-      └─────────────┴─────────────┴─────────────┴─────────────┘
-                                      │
-                                      ▼
-                        Knowledge Base Search (RAG Tool)
-                                      │
-                                      ▼
-                         ChromaDB Vector Database
-                                      │
-                                      ▼
-                           Response Aggregator Agent
-                                      │
-                                      ▼
-                          Final Customer Response
-                                      │
-             ┌────────────────────────┴────────────────────────┐
-             ▼                                                 ▼
-     Conversation Logs                              Dialogue State
-             │                                                 │
-             └────────────────────────┬────────────────────────┘
-                                      ▼
-                                 SQLite Database
-
-                Email Tool (Triggered only during Human Escalation)
+![System Architecture](docs/system_architecture.png)
 
 ---
 
