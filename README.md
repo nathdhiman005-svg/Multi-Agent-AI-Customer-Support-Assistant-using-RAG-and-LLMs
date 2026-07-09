@@ -134,7 +134,7 @@ Maintains isolated conversation state using unique conversation IDs, enabling fo
 
 # System Architecture
 
-![System Architecture](docs/system_architecture.png)
+![System Architecture](docs/architecture1.webp)
 
 ---
 
