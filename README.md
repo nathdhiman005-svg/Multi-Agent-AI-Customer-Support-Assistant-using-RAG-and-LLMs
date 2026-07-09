@@ -267,6 +267,7 @@ EMAIL_APP_PASSWORD=your_google_app_password
 ```
 
 EMAIL → Administrator email address used to receive escalated customer issues.
+
 EMAIL_APP_PASSWORD → Google App Password associated with the email account which the ai will use to send emails when needed.
 
 ---
